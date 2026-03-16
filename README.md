@@ -43,7 +43,7 @@ The platform supports multiple languages to help farmers from different regions.
 
 1. Clone the repository
 
-git clone https://github.com/yourusername/smart-agriculture-ai.git
+git clone https://github.com/sakshamdwivedi6363-max/smart-agriculture-ai.git
 
 2. Install required libraries
 

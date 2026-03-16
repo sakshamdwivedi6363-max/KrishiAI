@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KrishiAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--soil:#1a1508;--earth:#2d2210;--humus:#3d2f16;--clay:#5a4020;--loam:#7a5c30;--straw:#c4a35a;--wheat:#e8c97a;--leaf:#4a9a3f;--stem:#2d6b24;--sprout:#7dce6e;--sky:#4a8db5;--mist:#a8cfe0;--accent:#e85c2a;--warn:#d4a017;--parch:#faf3e0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--soil);color:var(--parch);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.hdr{background:var(--earth);border-bottom:1px solid var(--humus);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.lmark{width:36px;height:36px;background:var(--leaf);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.ltxt{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--wheat);}
+.lsub{font-size:0.7rem;color:var(--straw);letter-spacing:0.08em;text-transform:uppercase;margin-top:-2px;}
+.hr{display:flex;align-items:center;gap:12px;}
+.lsel{background:var(--humus);border:1px solid var(--clay);color:var(--wheat);padding:6px 10px;border-radius:6px;font-size:0.8rem;cursor:pointer;outline:none;}
+.fbadge{background:var(--humus);border:1px solid var(--clay);border-radius:20px;padding:6px 14px;font-size:0.8rem;color:var(--straw);display:flex;align-items:center;gap:6px;}
+.fdot{width:8px;height:8px;background:var(--sprout);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.main{display:grid;grid-template-columns:1fr 400px;min-height:calc(100vh - 64px);}
+.left{padding:2rem;display:flex;flex-direction:column;gap:1.5rem;}
+.scard{background:var(--earth);border:1px solid var(--humus);border-radius:12px;overflow:hidden;}
+.scard.active{border-color:var(--leaf);}
+.scard.done{border-color:var(--stem);}
+.shed{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--humus);}
+.snum{width:28px;height:28px;background:var(--clay);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:500;color:var(--wheat);flex-shrink:0;}
+.scard.active .snum,.scard.done .snum{background:var(--leaf);}
+.slbl{font-size:0.9rem;font-weight:500;color:#f0e0b8;flex:1;}
+.sst{font-size:0.75rem;color:var(--straw);}
+.scard.done .sst{color:var(--sprout);}
+.sbody{padding:18px;display:none;}
+.scard.active .sbody,.scard.done .sbody{display:block;}
+.upzone{border:2px dashed var(--clay);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;position:relative;}
+.upzone:hover{border-color:var(--leaf);background:rgba(74,154,63,0.06);}
+.upzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upico{width:48px;height:48px;background:var(--humus);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.prevbox{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:16/9;display:none;}
+.prevbox img{width:100%;height:100%;object-fit:cover;}
+.prevlbl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:8px 10px;font-size:0.75rem;}
+.prevrm{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);border:none;color:#f0e0b8;width:24px;height:24px;border-radius:50%;cursor:pointer;}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.cbtn{background:var(--humus);border:1.5px solid var(--clay);border-radius:8px;padding:10px 6px;cursor:pointer;text-align:center;color:var(--straw);font-family:'DM Sans',sans-serif;font-size:0.75rem;}
+.cbtn .ce{font-size:1.4rem;display:block;margin-bottom:4px;}
+.cbtn:hover{border-color:var(--leaf);color:var(--wheat);}
+.cbtn.sel{background:rgba(74,154,63,0.15);border-color:var(--leaf);color:var(--sprout);}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:0.75rem;font-weight:500;color:var(--straw);text-transform:uppercase;letter-spacing:0.06em;}
+.field input,.field select{background:var(--humus);border:1px solid var(--clay);border-radius:7px;padding:9px 12px;color:var(--parch);font-family:'DM Sans',sans-serif;font-size:0.875rem;outline:none;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--leaf);}
+.field select option{background:var(--earth);}
+.utag{font-size:0.7rem;color:var(--loam);margin-top:2px;}
+.slw{display:flex;flex-direction:column;gap:8px;}
+.slh{display:flex;justify-content:space-between;align-items:center;}
+.sll{font-size:0.78rem;font-weight:500;color:var(--straw);text-transform:uppercase;letter-spacing:0.05em;}
+.slv{font-size:0.85rem;font-weight:500;color:var(--wheat);}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--clay);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--leaf);cursor:pointer;border:2px solid var(--earth);}
+.slr{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--loam);}
+.abtn{width:100%;padding:14px;background:var(--leaf);border:none;border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
+.abtn:hover{background:var(--stem);}
+.abtn:disabled{background:var(--clay);cursor:not-allowed;}
+.spn{width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.abtn.loading .spn{display:block;}
+.rpan{background:var(--earth);border-left:1px solid var(--humus);display:flex;flex-direction:column;overflow-y:auto;position:sticky;top:64px;height:calc(100vh - 64px);}
+.rhed{padding:20px 20px 16px;border-bottom:1px solid var(--humus);}
+.rtit{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--wheat);display:flex;align-items:center;gap:8px;}
+.rdot{width:8px;height:8px;background:var(--straw);border-radius:50%;}
+.rdot.on{background:var(--sprout);animation:pulse 1.5s ease-in-out infinite;}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;gap:12px;color:var(--loam);}
+.ptbar{background:var(--clay);height:3px;border-radius:2px;overflow:hidden;}
+.ptfill{height:100%;background:var(--leaf);border-radius:2px;transition:width 0.4s;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--earth);border:1px solid var(--leaf);border-radius:8px;padding:10px 18px;font-size:0.83rem;color:var(--sprout);z-index:999;transition:transform 0.3s;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.card{background:var(--humus);border:1px solid var(--clay);border-radius:8px;padding:12px 14px;margin:0 16px 10px;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--earth);}
+::-webkit-scrollbar-thumb{background:var(--clay);border-radius:2px;}
+@media(max-width:900px){.main{grid-template-columns:1fr;}.rpan{position:static;height:auto;border-left:none;border-top:1px solid var(--humus);}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="logo">
+    <div class="lmark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" fill="rgba(255,255,255,0.1)" stroke="none"/><path d="M8 16s1-4 4-4 4 4 4 4"/><path d="M12 6v6l3 2"/></svg></div>
+    <div><div class="ltxt">KrishiAI</div><div class="lsub" id="E0">Smart Farm Intelligence</div></div>
+  </div>
+  <div class="hr">
+    <select class="lsel" onchange="setL(this.value)">
+      <option value="en">English</option><option value="hi">हिंदी</option>
+      <option value="ta">தமிழ்</option><option value="te">తెలుగు</option>
+      <option value="bn">বাংলা</option><option value="mr">मराठी</option>
+      <option value="sw">Kiswahili</option>
+    </select>
+    <div class="fbadge"><div class="fdot"></div><span id="E1">Farmer</span></div>
+  </div>
+</header>
+
+<div class="main">
+<div class="left">
+  <div><h1 style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--wheat)" id="E2">Analyse Your Crop</h1>
+  <p style="font-size:0.85rem;color:var(--straw);margin-top:4px;line-height:1.6" id="E3">Upload a photo and enter field data to get personalised AI recommendations.</p></div>
+
+  <div class="scard active" id="sc1">
+    <div class="shed" onclick="tog('sc1')"><div class="snum">1</div><span class="slbl" id="E4">Crop Image</span><span class="sst" id="E5">Optional</span></div>
+    <div class="sbody">
+      <div class="upzone" id="upz" ondragover="event.preventDefault()" ondrop="doDrop(event)">
+        <input type="file" accept="image/*" onchange="loadImg(event)">
+        <div class="upico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a9a3f" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+        <div style="font-size:0.85rem;color:var(--straw)"><strong id="E6">Click or drag photo here</strong></div>
+        <div style="font-size:0.75rem;color:var(--loam);margin-top:4px" id="E7">JPG, PNG or WEBP</div>
+      </div>
+      <div class="prevbox" id="prevb"><img id="pimg" src="" alt=""><div class="prevlbl" id="E8">Image loaded</div><button class="prevrm" onclick="rmImg()">x</button></div>
+    </div>
+  </div>
+
+  <div class="scard" id="sc2">
+    <div class="shed" onclick="tog('sc2')"><div class="snum">2</div><span class="slbl" id="E9">Crop Type</span><span class="sst" id="E10">Select</span></div>
+    <div class="sbody">
+      <div class="cgrid">
+        <div class="cbtn" onclick="selC(this,'wheat')"><span class="ce">&#127806;</span><span id="C1">Wheat</span></div>
+        <div class="cbtn" onclick="selC(this,'rice')"><span class="ce">&#127806;</span><span id="C2">Rice</span></div>
+        <div class="cbtn" onclick="selC(this,'maize')"><span class="ce">&#127805;</span><span id="C3">Maize</span></div>
+        <div class="cbtn" onclick="selC(this,'tomato')"><span class="ce">&#127813;</span><span id="C4">Tomato</span></div>
+        <div class="cbtn" onclick="selC(this,'potato')"><span class="ce">&#129364;</span><span id="C5">Potato</span></div>
+        <div class="cbtn" onclick="selC(this,'cotton')"><span class="ce">&#127807;</span><span id="C6">Cotton</span></div>
+        <div class="cbtn" onclick="selC(this,'soybean')"><span class="ce">&#129752;</span><span id="C7">Soybean</span></div>
+        <div class="cbtn" onclick="selC(this,'sugarcane')"><span class="ce">&#127947;</span><span id="C8">Sugarcane</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scard" id="sc3">
+    <div class="shed" onclick="tog('sc3')"><div class="snum">3</div><span class="slbl" id="E11">Soil Nutrients</span><span class="sst" id="E12">Enter values</span></div>
+    <div class="sbody">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="slw"><div class="slh"><span class="sll" id="E13">Nitrogen (N)</span><span class="slv"><span id="nv">80</span> kg/ha</span></div><input type="range" min="0" max="200" value="80" step="1" id="sn" oninput="doSl('n',this.value)"><div class="slr"><span>0</span><span>200 kg/ha</span></div></div>
+        <div class="slw"><div class="slh"><span class="sll" id="E14">Phosphorus (P)</span><span class="slv"><span id="pv">40</span> kg/ha</span></div><input type="range" min="0" max="100" value="40" step="1" id="sp" oninput="doSl('p',this.value)"><div class="slr"><span>0</span><span>100 kg/ha</span></div></div>
+        <div class="slw"><div class="slh"><span class="sll" id="E15">Potassium (K)</span><span class="slv"><span id="kv">60</span> kg/ha</span></div><input type="range" min="0" max="200" value="60" step="1" id="sk" oninput="doSl('k',this.value)"><div class="slr"><span>0</span><span>200 kg/ha</span></div></div>
+        <div class="fg">
+          <div class="field"><label id="E16">Soil pH</label><input type="number" id="iph" value="6.5" min="4" max="9" step="0.1"><span class="utag">Optimal: 6.0-7.0</span></div>
+          <div class="field"><label id="E17">Organic Matter</label><input type="number" id="iom" value="2.5" min="0" max="10" step="0.1"><span class="utag">% ideal: 2-4%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scard" id="sc4">
+    <div class="shed" onclick="tog('sc4')"><div class="snum">4</div><span class="slbl" id="E18">Weather Conditions</span><span class="sst" id="E19">Enter values</span></div>
+    <div class="sbody">
+      <div class="fg" style="margin-bottom:12px;">
+        <div class="field"><label id="E20">Temperature</label><input type="number" id="itmp" value="28" min="0" max="50"><span class="utag">Celsius</span></div>
+        <div class="field"><label id="E21">Rainfall/week</label><input type="number" id="irn" value="25" min="0" max="200"><span class="utag">mm</span></div>
+      </div>
+      <div class="fg3">
+        <div class="field"><label id="E22">Humidity</label><input type="number" id="ihm" value="65" min="0" max="100"><span class="utag">%</span></div>
+        <div class="field"><label id="E23">Sunlight</label><input type="number" id="isu" value="8" min="0" max="14"><span class="utag">hrs/day</span></div>
+        <div class="field"><label id="E24">Season</label>
+          <select id="ise">
+            <option value="kharif" id="S1">Kharif</option>
+            <option value="rabi" selected id="S2">Rabi</option>
+            <option value="zaid" id="S3">Zaid</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:0.75rem;color:var(--straw)" id="E25">Input completeness</span>
+      <span style="font-size:0.75rem;color:var(--wheat)" id="pct">25%</span>
+    </div>
+    <div class="ptbar"><div class="ptfill" id="ptf" style="width:25%"></div></div>
+  </div>
+
+  <button class="abtn" id="abtn" onclick="doAn()">
+    <div class="spn" id="spn"></div>
+    <span id="E26">Analyse Farm Conditions</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<div class="rpan">
+  <div class="rhed"><div class="rtit"><div class="rdot" id="rdot"></div><span id="E27">AI Recommendations</span></div></div>
+  <div class="empty" id="emp"><div style="font-size:3rem;opacity:0.5">&#127807;</div><p id="E28" style="font-size:0.85rem;line-height:1.7">Complete the form and click Analyse to receive personalised AI recommendations.</p></div>
+  <div id="rout" style="display:none;padding:12px 0 16px;"></div>
+</div>
+</div>
+<div class="toast" id="tst"></div>
+
+<script>
+var TR={
+en:{E0:"Smart Farm Intelligence",E1:"Farmer",E2:"Analyse Your Crop",E3:"Upload a photo and enter field data to get personalised AI recommendations.",E4:"Crop Image",E5:"Optional",E6:"Click or drag photo here",E7:"JPG, PNG or WEBP",E8:"Image loaded",E9:"Crop Type",E10:"Select",E11:"Soil Nutrients",E12:"Enter values",E13:"Nitrogen (N)",E14:"Phosphorus (P)",E15:"Potassium (K)",E16:"Soil pH",E17:"Organic Matter",E18:"Weather Conditions",E19:"Enter values",E20:"Temperature",E21:"Rainfall/week",E22:"Humidity",E23:"Sunlight",E24:"Season",E25:"Input completeness",E26:"Analyse Farm Conditions",E27:"AI Recommendations",E28:"Complete the form and click Analyse to receive personalised AI recommendations.",S1:"Kharif",S2:"Rabi",S3:"Zaid",C1:"Wheat",C2:"Rice",C3:"Maize",C4:"Tomato",C5:"Potato",C6:"Cotton",C7:"Soybean",C8:"Sugarcane",
+sh:"Soil Health",ov:"Overall Score",py:"Predicted Yield",gr:"Grade",dis:"Disease Detected",ok:"Crop appears healthy",pri:"Priority Action",fert:"Fertilizer",irr:"Irrigation",imp:"Improvement",dose:"Dose",tim:"Timing",meth:"Method",note:"Note",slbl:"Season",voice:"Play voice advisory",spk:"Speaking...",req:"Please select crop type",imgok:"Image loaded - ready",done:"Analysis complete!",
+tts_h:"Your {c} crop appears healthy. Predicted yield is {y} tonnes per hectare. Soil health is {s} out of 100. Priority: {p}.",
+tts_d:"Warning! {d} detected in your {c} crop with {pct} percent confidence. Predicted yield is {y} tonnes. Priority: {p}."},
+
+hi:{E0:"स्मार्ट खेत",E1:"किसान",E2:"अपनी फसल का विश्लेषण करें",E3:"व्यक्तिगत AI सुझाव पाने के लिए फोटो और डेटा दर्ज करें।",E4:"फसल फोटो",E5:"वैकल्पिक",E6:"यहाँ फोटो खींचें",E7:"JPG PNG WEBP",E8:"फोटो लोड हुई",E9:"फसल प्रकार",E10:"चुनें",E11:"मिट्टी पोषक",E12:"मान दर्ज करें",E13:"नाइट्रोजन",E14:"फास्फोरस",E15:"पोटेशियम",E16:"मिट्टी pH",E17:"जैव पदार्थ",E18:"मौसम",E19:"मान दर्ज करें",E20:"तापमान",E21:"वर्षा/सप्ताह",E22:"आर्द्रता",E23:"धूप",E24:"मौसम",E25:"पूर्णता",E26:"विश्लेषण करें",E27:"AI सुझाव",E28:"फॉर्म पूरा करें और विश्लेषण क्लिक करें।",S1:"खरीफ",S2:"रबी",S3:"जायद",C1:"गेहूं",C2:"चावल",C3:"मक्का",C4:"टमाटर",C5:"आलू",C6:"कपास",C7:"सोयाबीन",C8:"गन्ना",
+sh:"मिट्टी स्वास्थ्य",ov:"स्कोर",py:"उपज",gr:"ग्रेड",dis:"रोग पाया",ok:"फसल स्वस्थ है",pri:"प्राथमिकता",fert:"उर्वरक",irr:"सिंचाई",imp:"सुधार",dose:"मात्रा",tim:"समय",meth:"विधि",note:"नोट",slbl:"मौसम",voice:"आवाज में सुनें",spk:"बोल रहा है...",req:"फसल चुनें",imgok:"फोटो लोड",done:"विश्लेषण पूरा!",
+tts_h:"आपकी {c} फसल स्वस्थ है। उपज {y} टन प्रति हेक्टेयर। मिट्टी स्कोर {s}। कार्यवाही: {p}।",
+tts_d:"चेतावनी! {c} में {d} रोग {pct} प्रतिशत पाया। उपज {y} टन। कार्यवाही: {p}।"},
+
+ta:{E0:"ஸ்மார்ட் பண்ணை",E1:"விவசாயி",E2:"பயிரை பகுப்பாய்வு செய்யுங்கள்",E3:"தனிப்பயன் AI பரிந்துரைகளைப் பெற படம் உள்ளிடவும்.",E4:"பயிர் படம்",E5:"விருப்பமானது",E6:"படத்தை இழுக்கவும்",E7:"JPG PNG WEBP",E8:"படம் ஏற்றப்பட்டது",E9:"பயிர் வகை",E10:"தேர்ந்தெடுக்கவும்",E11:"மண் ஊட்டம்",E12:"மதிப்பு உள்ளிடவும்",E13:"நைட்ரஜன்",E14:"பாஸ்பரஸ்",E15:"பொட்டாசியம்",E16:"மண் pH",E17:"கரிம பொருள்",E18:"வானிலை",E19:"மதிப்பு உள்ளிடவும்",E20:"வெப்பநிலை",E21:"மழை/வாரம்",E22:"ஈரப்பதம்",E23:"சூரியஒளி",E24:"பருவம்",E25:"முடிவு",E26:"பகுப்பாய்வு செய்யுங்கள்",E27:"AI பரிந்துரைகள்",E28:"படிவத்தை நிரப்பி பகுப்பாய்வு கிளிக் செய்யுங்கள்.",S1:"கரிஃப்",S2:"ரபி",S3:"சைத்",C1:"கோதுமை",C2:"அரிசி",C3:"சோளம்",C4:"தக்காளி",C5:"உருளை",C6:"பருத்தி",C7:"சோயா",C8:"கரும்பு",
+sh:"மண் ஆரோக்கியம்",ov:"மதிப்பெண்",py:"மகசூல்",gr:"தரம்",dis:"நோய்",ok:"பயிர் ஆரோக்கியம்",pri:"முன்னுரிமை",fert:"உரம்",irr:"பாசனம்",imp:"மேம்பாடு",dose:"அளவு",tim:"நேரம்",meth:"முறை",note:"குறிப்பு",slbl:"பருவம்",voice:"குரலில் கேளுங்கள்",spk:"பேசுகிறது...",req:"பயிர் தேர்ந்தெடுக்கவும்",imgok:"படம் தயார்",done:"முடிந்தது!",
+tts_h:"உங்கள் {c} பயிர் ஆரோக்கியம். மகசூல் {y} டன். மண் மதிப்பெண் {s}. முன்னுரிமை: {p}.",
+tts_d:"எச்சரிக்கை! {c} பயிரில் {d} நோய் {pct} சதவீதம். மகசூல் {y} டன். முன்னுரிமை: {p}."},
+
+te:{E0:"స్మార్ట్ వ్యవసాయం",E1:"రైతు",E2:"మీ పంటను విశ్లేషించండి",E3:"వ్యక్తిగత AI సిఫార్సులు పొందడానికి ఫోటో నమోదు చేయండి.",E4:"పంట ఫోటో",E5:"ఐచ్ఛికం",E6:"ఫోటో లాగండి",E7:"JPG PNG WEBP",E8:"ఫోటో లోడ్",E9:"పంట రకం",E10:"ఎంచుకోండి",E11:"నేల పోషకాలు",E12:"విలువలు నమోదు",E13:"నత్రజని",E14:"భాస్వరం",E15:"పొటాషియం",E16:"నేల pH",E17:"సేంద్రియ పదార్థం",E18:"వాతావరణం",E19:"విలువలు నమోదు",E20:"ఉష్ణోగ్రత",E21:"వర్షపాతం/వారం",E22:"తేమ",E23:"సూర్యకాంతి",E24:"సీజన్",E25:"పూర్తి",E26:"విశ్లేషించండి",E27:"AI సిఫార్సులు",E28:"ఫారం పూర్తి చేసి విశ్లేషించండి.",S1:"ఖరీఫ్",S2:"రబీ",S3:"జైద్",C1:"గోధుమ",C2:"వరి",C3:"మొక్కజొన్న",C4:"టమాటా",C5:"బంగాళదుంప",C6:"పత్తి",C7:"సోయాబీన్",C8:"చెరకు",
+sh:"నేల ఆరోగ్యం",ov:"స్కోర్",py:"దిగుబడి",gr:"గ్రేడ్",dis:"వ్యాధి",ok:"పంట ఆరోగ్యం",pri:"ప్రాధాన్యత",fert:"ఎరువు",irr:"నీటిపారుదల",imp:"మెరుగుదల",dose:"మోతాదు",tim:"సమయం",meth:"పద్ధతి",note:"గమనిక",slbl:"సీజన్",voice:"వినండి",spk:"మాట్లాడుతోంది...",req:"పంట ఎంచుకోండి",imgok:"ఫోటో సిద్ధం",done:"పూర్తైంది!",
+tts_h:"మీ {c} పంట ఆరోగ్యంగా ఉంది. దిగుబడి {y} టన్నులు. నేల స్కోర్ {s}. ప్రాధాన్యత: {p}.",
+tts_d:"హెచ్చరిక! {c} పంటలో {d} వ్యాధి {pct} శాతం. దిగుబడి {y} టన్నులు. ప్రాధాన్యత: {p}."},
+
+bn:{E0:"স্মার্ট কৃষি",E1:"কৃষক",E2:"আপনার ফসল বিশ্লেষণ করুন",E3:"ব্যক্তিগত AI সুপারিশ পেতে ছবি এবং তথ্য লিখুন।",E4:"ফসলের ছবি",E5:"ঐচ্ছিক",E6:"ছবি টেনে আনুন",E7:"JPG PNG WEBP",E8:"ছবি লোড হয়েছে",E9:"ফসলের ধরন",E10:"নির্বাচন করুন",E11:"মাটির পুষ্টি",E12:"মান লিখুন",E13:"নাইট্রোজেন",E14:"ফসফরাস",E15:"পটাসিয়াম",E16:"মাটির pH",E17:"জৈব পদার্থ",E18:"আবহাওয়া",E19:"মান লিখুন",E20:"তাপমাত্রা",E21:"বৃষ্টি/সপ্তাহ",E22:"আর্দ্রতা",E23:"সূর্যালোক",E24:"মৌসুম",E25:"সম্পূর্ণতা",E26:"বিশ্লেষণ করুন",E27:"AI সুপারিশ",E28:"ফর্ম পূরণ করুন এবং বিশ্লেষণ করুন।",S1:"খরিফ",S2:"রবি",S3:"জায়েদ",C1:"গম",C2:"ধান",C3:"ভুট্টা",C4:"টমেটো",C5:"আলু",C6:"তুলা",C7:"সয়াবিন",C8:"আখ",
+sh:"মাটির স্বাস্থ্য",ov:"স্কোর",py:"ফলন",gr:"গ্রেড",dis:"রোগ",ok:"ফসল সুস্থ",pri:"অগ্রাধিকার",fert:"সার",irr:"সেচ",imp:"উন্নয়ন",dose:"মাত্রা",tim:"সময়",meth:"পদ্ধতি",note:"নোট",slbl:"মৌসুম",voice:"শুনুন",spk:"বলছে...",req:"ফসল নির্বাচন করুন",imgok:"ছবি তৈরি",done:"সম্পন্ন!",
+tts_h:"আপনার {c} ফসল সুস্থ। ফলন {y} টন। মাটির স্কোর {s}। অগ্রাধিকার: {p}।",
+tts_d:"সতর্কতা! {c} ফসলে {d} রোগ {pct} শতাংশ। ফলন {y} টন। অগ্রাধিকার: {p}।"},
+
+mr:{E0:"स्मार्ट शेती",E1:"शेतकरी",E2:"आपल्या पिकाचे विश्लेषण करा",E3:"वैयक्तिक AI शिफारसी मिळवण्यासाठी फोटो आणि माहिती भरा।",E4:"पिकाचा फोटो",E5:"पर्यायी",E6:"फोटो खेचा",E7:"JPG PNG WEBP",E8:"फोटो लोड झाला",E9:"पिकाचा प्रकार",E10:"निवडा",E11:"मातीचे पोषक",E12:"मूल्ये भरा",E13:"नायट्रोजन",E14:"फॉस्फरस",E15:"पोटॅशियम",E16:"मातीचा pH",E17:"सेंद्रिय पदार्थ",E18:"हवामान",E19:"मूल्ये भरा",E20:"तापमान",E21:"पाऊस/आठवडा",E22:"आर्द्रता",E23:"सूर्यप्रकाश",E24:"हंगाम",E25:"पूर्णता",E26:"विश्लेषण करा",E27:"AI शिफारसी",E28:"फॉर्म भरा आणि विश्लेषण करा।",S1:"खरीप",S2:"रब्बी",S3:"उन्हाळी",C1:"गहू",C2:"तांदूळ",C3:"मका",C4:"टोमॅटो",C5:"बटाटा",C6:"कापूस",C7:"सोयाबीन",C8:"ऊस",
+sh:"माती आरोग्य",ov:"स्कोर",py:"उत्पादन",gr:"ग्रेड",dis:"रोग",ok:"पीक निरोगी",pri:"प्राधान्य",fert:"खत",irr:"सिंचन",imp:"सुधारणा",dose:"मात्रा",tim:"वेळ",meth:"पद्धत",note:"नोंद",slbl:"हंगाम",voice:"ऐका",spk:"बोलत आहे...",req:"पीक निवडा",imgok:"फोटो तयार",done:"पूर्ण!",
+tts_h:"तुमचे {c} पीक निरोगी आहे. उत्पादन {y} टन. माती स्कोर {s}. प्राधान्य: {p}.",
+tts_d:"सावधान! {c} पिकावर {d} रोग {pct} टक्के. उत्पादन {y} टन. प्राधान्य: {p}."},
+
+sw:{E0:"Akili ya Shamba",E1:"Mkulima",E2:"Changanua Zao Lako",E3:"Pakia picha na uingize data kupata mapendekezo ya AI.",E4:"Picha ya Zao",E5:"Hiari",E6:"Buruta picha hapa",E7:"JPG PNG WEBP",E8:"Picha imepakiwa",E9:"Aina ya Zao",E10:"Chagua",E11:"Virutubisho",E12:"Ingiza maadili",E13:"Nitrojeni",E14:"Fosforasi",E15:"Potasiamu",E16:"pH ya Udongo",E17:"Viumbe Kikaboni",E18:"Hali ya Hewa",E19:"Ingiza maadili",E20:"Joto",E21:"Mvua/wiki",E22:"Unyevu",E23:"Jua",E24:"Msimu",E25:"Ukamilifu",E26:"Changanua",E27:"Mapendekezo ya AI",E28:"Kamilisha fomu na ubonyeze Changanua.",S1:"Kharif",S2:"Rabi",S3:"Zaid",C1:"Ngano",C2:"Mchele",C3:"Mahindi",C4:"Nyanya",C5:"Viazi",C6:"Pamba",C7:"Soya",C8:"Miwa",
+sh:"Afya ya Udongo",ov:"Alama",py:"Mavuno",gr:"Daraja",dis:"Ugonjwa",ok:"Zao salama",pri:"Hatua ya Kwanza",fert:"Mbolea",irr:"Umwagiliaji",imp:"Uboreshaji",dose:"Kipimo",tim:"Wakati",meth:"Njia",note:"Kumbuka",slbl:"Msimu",voice:"Sikiliza",spk:"Inasema...",req:"Chagua aina ya zao",imgok:"Picha tayari",done:"Imekamilika!",
+tts_h:"Zao lako la {c} liko salama. Mavuno ni tani {y} kwa hekta. Afya ya udongo ni {s} kati ya 100. Hatua: {p}.",
+tts_d:"Tahadhari! Ugonjwa wa {d} katika zao la {c} kwa uhakika wa {pct} asilimia. Mavuno {y} tani. Hatua: {p}."}
+};
+
+var lang="en", crop=null, imgOk=false;
+
+function g(id){return document.getElementById(id);}
+function tx(k){var r=TR[lang];return(r&&r[k])?r[k]:(TR.en[k]||k);}
+function toast(m){var el=g("tst");el.textContent=m;el.classList.add("show");setTimeout(function(){el.classList.remove("show");},3000);}
+
+function tog(id){
+  var all=document.querySelectorAll(".scard");
+  for(var i=0;i<all.length;i++){if(all[i].id!==id)all[i].classList.remove("active");}
+  g(id).classList.toggle("active");
+}
+
+function doSl(id,val){
+  g(id+"v").textContent=val;
+  var sl=g("s"+id);
+  sl.style.background="linear-gradient(to right,var(--leaf) "+Math.round(val/sl.max*100)+"%,var(--clay) "+Math.round(val/sl.max*100)+"%)";
+}
+
+function updP(){
+  var n=[imgOk?1:0,crop?1:0,1,1].reduce(function(a,b){return a+b;},0);
+  var p=Math.round(n/4*100);
+  g("ptf").style.width=p+"%";
+  g("pct").textContent=p+"%";
+}
+
+doSl("n",g("sn").value); doSl("p",g("sp").value); doSl("k",g("sk").value);
+updP();
+
+function setL(l){
+  lang=l;
+  var r=TR[l]||TR.en;
+  var ids=["E0","E1","E2","E3","E4","E5","E6","E7","E8","E9","E10","E11","E12","E13","E14","E15","E16","E17","E18","E19","E20","E21","E22","E23","E24","E25","E26","E27","E28","S1","S2","S3","C1","C2","C3","C4","C5","C6","C7","C8"];
+  for(var i=0;i<ids.length;i++){var el=g(ids[i]);if(el&&r[ids[i]])el.textContent=r[ids[i]];}
+}
+
+function loadImg(e){if(e.target.files&&e.target.files[0])readF(e.target.files[0]);}
+function doDrop(e){e.preventDefault();if(e.dataTransfer.files&&e.dataTransfer.files[0])readF(e.dataTransfer.files[0]);}
+function readF(f){
+  var rd=new FileReader();
+  rd.onload=function(ev){
+    g("pimg").src=ev.target.result;
+    g("upz").style.display="none";
+    g("prevb").style.display="block";
+    g("E8").textContent=tx("imgok");
+    imgOk=true;
+    g("sc1").classList.add("done");
+    g("E5").textContent="checkmark";
+    g("E5").style.color="var(--sprout)";
+    updP(); tog("sc2"); toast(tx("imgok"));
+  };
+  rd.readAsDataURL(f);
+}
+function rmImg(){
+  g("upz").style.display="block";
+  g("prevb").style.display="none";
+  g("pimg").src="";
+  imgOk=false;
+  g("sc1").classList.remove("done");
+  g("E5").textContent=tx("E5");
+  g("E5").style.color="";
+  updP();
+}
+
+function selC(el,c){
+  var all=document.querySelectorAll(".cbtn");
+  for(var i=0;i<all.length;i++)all[i].classList.remove("sel");
+  el.classList.add("sel");
+  crop=c;
+  g("sc2").classList.add("done");
+  g("E10").textContent="OK "+el.querySelector("span:last-child").textContent;
+  g("E10").style.color="var(--sprout)";
+  updP(); tog("sc3");
+}
+
+function doAn(){
+  if(!crop){toast(tx("req"));return;}
+  var btn=g("abtn");
+  btn.classList.add("loading"); btn.disabled=true;
+  g("spn").style.display="block";
+  g("rdot").classList.add("on");
+  g("emp").style.display="none";
+  g("rout").style.display="none";
+
+  var pay={
+    N:g("sn").value, P:g("sp").value, K:g("sk").value,
+    pH:g("iph").value, OM:g("iom").value,
+    temperature:g("itmp").value, rainfall:g("irn").value,
+    humidity:g("ihm").value, sunlight:g("isu").value,
+    season:g("ise").value, crop:crop, lang:lang,
+    image:imgOk?g("pimg").src:null
+  };
+
+  fetch("/api/analyse",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(pay)})
+  .then(function(r){return r.json();})
+  .then(function(d){showR(d);})
+  .catch(function(e){toast("Server error");console.error(e);})
+  .finally(function(){btn.classList.remove("loading");btn.disabled=false;g("spn").style.display="none";});
+}
+
+var CK={wheat:"C1",rice:"C2",maize:"C3",tomato:"C4",potato:"C5",cotton:"C6",soybean:"C7",sugarcane:"C8"};
+
+function showR(d){
+  var cn=tx(CK[d.crop]||"C1");
+  var ok=d.is_healthy;
+  var h="";
+
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 8px">';
+  h+='<div class="card" style="margin:0"><p style="font-size:11px;color:var(--straw);margin:0 0 4px">'+tx("sh")+'</p>';
+  h+='<p style="font-size:22px;font-weight:500;margin:0;color:'+(d.soil_health>70?"var(--sprout)":d.soil_health>50?"var(--warn)":"var(--accent)")+'">'+d.soil_health+'<span style="font-size:12px;color:var(--loam)">/100</span></p></div>';
+  h+='<div class="card" style="margin:0"><p style="font-size:11px;color:var(--straw);margin:0 0 4px">'+tx("ov")+'</p>';
+  h+='<p style="font-size:22px;font-weight:500;margin:0;color:var(--wheat)">'+d.overall_score+'<span style="font-size:12px;color:var(--loam)">/100</span></p></div></div>';
+
+  h+='<div style="padding:4px 16px 12px">';
+  h+='<p style="font-size:11px;color:var(--straw);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 4px">'+tx("py")+' — '+cn+'</p>';
+  h+='<p style="font-size:30px;font-weight:300;color:var(--wheat);margin:0;font-family:\'Playfair Display\',serif">'+d.yield+' <span style="font-size:13px;color:var(--straw)">t/ha</span></p>';
+  h+='<p style="font-size:11px;color:var(--loam);margin:4px 0 0">'+d.yield_low+'-'+d.yield_high+' t/ha | '+tx("gr")+': '+d.grade+'</p></div>';
+
+  h+='<div style="margin:0 16px 10px;padding:12px 14px;background:'+(ok?"rgba(74,154,63,0.1)":"rgba(192,57,43,0.12)")+';border:1px solid '+(ok?"rgba(74,154,63,0.3)":"rgba(192,57,43,0.35)")+';border-radius:8px">';
+  h+='<p style="font-size:13px;font-weight:500;color:'+(ok?"var(--sprout)":"#e87070")+';margin:0 0 3px">'+(ok?"OK "+tx("ok"):"!! "+tx("dis")+": "+d.disease)+'</p>';
+  if(!ok)h+='<p style="font-size:12px;color:var(--straw);margin:0">'+d.confidence+'% confidence</p>';
+  h+='</div>';
+
+  if(d.season_warning){h+='<div style="margin:0 16px 10px;padding:10px 12px;background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.35);border-radius:8px"><p style="font-size:12px;color:var(--warn);margin:0">!! '+d.season_warning+'</p></div>';}
+
+  h+='<div class="card"><p style="font-size:12px;font-weight:500;color:var(--warn);margin:0 0 6px">'+tx("slbl")+': '+(d.season||"").charAt(0).toUpperCase()+(d.season||"").slice(1)+' — '+(d.season_months||"")+'</p>';
+  h+='<p style="font-size:12px;color:var(--straw);margin:0 0 4px">=> '+(d.season_tip||"")+'</p>';
+  h+='<p style="font-size:11px;color:var(--sky);margin:0">! '+(d.season_special||"")+'</p></div>';
+
+  h+='<div class="card"><p style="font-size:10px;color:var(--straw);margin:0 0 3px;text-transform:uppercase">'+tx("pri")+'</p><p style="font-size:13px;color:var(--wheat);margin:0">'+(d.priority||"")+'</p></div>';
+
+  h+='<div class="card"><p style="font-size:12px;font-weight:500;color:var(--sprout);margin:0 0 8px">'+tx("fert")+'</p>';
+  var fts=d.fertilizer||[];
+  for(var i=0;i<fts.length;i++){
+    h+='<p style="font-size:12px;color:var(--wheat);margin:0 0 2px">=> '+fts[i].action+'</p>';
+    h+='<p style="font-size:11px;color:var(--loam);margin:0 0 7px">'+tx("dose")+': '+fts[i].dose+' | '+tx("tim")+': '+fts[i].timing+'</p>';
+  }
+  h+='</div>';
+
+  var irr=d.irrigation||{};
+  h+='<div class="card"><p style="font-size:12px;font-weight:500;color:var(--sky);margin:0 0 8px">'+tx("irr")+'</p>';
+  h+='<p style="font-size:12px;color:var(--wheat);margin:0 0 3px">=> '+(irr.frequency||"")+'  '+(irr.volume||"")+'</p>';
+  h+='<p style="font-size:12px;color:var(--straw);margin:0 0 3px">'+tx("meth")+': '+(irr.method||"")+'</p>';
+  h+='<p style="font-size:11px;color:var(--loam);margin:0">'+tx("note")+': '+(irr.note||"")+'</p></div>';
+
+  h+='<div class="card"><p style="font-size:12px;font-weight:500;color:var(--mist);margin:0 0 8px">'+tx("imp")+'</p>';
+  var ims=d.improvement||[];
+  for(var j=0;j<Math.min(ims.length,4);j++){h+='<p style="font-size:12px;color:var(--straw);margin:0 0 5px">=> '+(ims[j].action||"")+'</p>';}
+  h+='</div>';
+
+  var yy=d.yield||"0", ss=d.soil_health||"0";
+  var pp=(d.priority||"").replace(/['"]/g,"");
+  var dd=(d.disease||"healthy").replace(/['"]/g,"");
+  var cc=d.confidence||0;
+  h+='<div style="padding:0 16px 4px"><button onclick="doSpk(\''+cn+'\',\''+yy+'\',\''+ss+'\',\''+pp+'\','+(ok?'true':'false')+',\''+dd+'\',\''+cc+'\')" style="width:100%;background:var(--humus);border:1px solid var(--clay);border-radius:8px;padding:10px;color:var(--straw);font-family:\'DM Sans\',sans-serif;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">&#128266; '+tx("voice")+'</button></div>';
+
+  var ro=g("rout"); ro.innerHTML=h; ro.style.display="block";
+  g("emp").style.display="none";
+  toast(tx("done"));
+}
+
+function doSpk(cn,yy,ss,pp,ok,dd,cc){
+  if(!window.speechSynthesis){toast("Voice not supported");return;}
+  var tmpl=ok?tx("tts_h"):tx("tts_d");
+  var txt=tmpl.replace("{c}",cn).replace("{y}",yy).replace("{s}",ss).replace("{p}",pp).replace("{d}",dd).replace("{pct}",cc);
+  var lm={en:"en-IN",hi:"hi-IN",ta:"ta-IN",te:"te-IN",bn:"bn-IN",mr:"mr-IN",sw:"sw"};
+  window.speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(txt);
+  u.lang=lm[lang]||"en-IN"; u.rate=0.88;
+  window.speechSynthesis.speak(u);
+  toast(tx("spk"));
+}
+</script>
+</body>
+</html>
